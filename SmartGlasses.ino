@@ -18,11 +18,9 @@ void loop() {
   if(writting == true){
      writting = false;
      Serial.println(data);
-  }   
-} 
+  }
 
-
-  if(!Serial.available() && writting == false && indexing == true){
+   if(!Serial.available() && writting == false && indexing == true){
     delimit[0] = 0;
     delimit[1] = data.indexOf('\n');
     delimit[2] = data.indexOf('\n', delimit[1]+1);
@@ -48,3 +46,7 @@ void loop() {
     }
     indexing = false;
   }
+} 
+
+
+ 
