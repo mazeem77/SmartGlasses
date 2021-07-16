@@ -2,7 +2,10 @@
 
 #define strlength 6
 String data;
-bool writting = false;
+String str[strlength];
+int delimit[strlength + 1];
+int i = 0;
+bool indexing = false;
 bool reading = false;
 
 void setup() { 
@@ -12,16 +15,11 @@ void setup() {
 void loop() { 
   if(Serial.available()) {
        data = Serial.readString();
-       writting = true;
+       indexing = true;
   }
 
-  if(writting == true){
-     writting = false;
-     Serial.println(data);
-  }
-
-   if(!Serial.available() && writting == false && indexing == true){
-    delimit[0] = 0;
+  if(!Serial.available() && indexing == true){
+    delimit[0] = -1;
     delimit[1] = data.indexOf('\n');
     delimit[2] = data.indexOf('\n', delimit[1]+1);
     delimit[3] = data.indexOf('\n', delimit[2]+1);
@@ -29,24 +27,22 @@ void loop() {
     delimit[5] = data.indexOf('\n', delimit[4]+1);
     delimit[6] = data.indexOf("*\n", delimit[5]+1);
         
-    Serial.println(delimit[0]);
-    Serial.println(delimit[1]);
-    Serial.println(delimit[2]);
-    Serial.println(delimit[3]);
-    Serial.println(delimit[4]);
-    Serial.println(delimit[5]);
-    Serial.println(delimit[6]);
+//    Serial.println(delimit[0]);
+//    Serial.println(delimit[1]);
+//    Serial.println(delimit[2]);
+//    Serial.println(delimit[3]);
+//    Serial.println(delimit[4]);
+//    Serial.println(delimit[5]);
+//    Serial.println(delimit[6]);
     
     for(int j =0; j < strlength; j++){
-      str[j] = data.substring(delimit[j], delimit[j+1]);
+      str[j] = data.substring(delimit[j] + 1, delimit[j+1]);
     }
-    for(int j =0; j < 6; j+2){
-      Serial.println(str[j]);
-       Serial.println(":" , str[j+1]);
-    }
+    Serial.print(str[0]);
+    Serial.println(":");
+    Serial.println(str[1]);
+    Serial.println("wott");
     indexing = false;
   }
-} 
-
-
- 
+  
+}
