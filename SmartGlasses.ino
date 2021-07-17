@@ -38,10 +38,12 @@ void loop() {
     for(int j =0; j < strlength; j++){
       str[j] = data.substring(delimit[j] + 1, delimit[j+1]);
     }
-    Serial.print(str[0]);
-    Serial.println(":");
-    Serial.println(str[1]);
-    Serial.println("wott");
+    for(int k = 0; k<6; k++){
+      Serial.print(str[k]);
+      Serial.println(":");
+      k++;
+      Serial.println(str[k]);
+    }
     indexing = false;
   }
   
