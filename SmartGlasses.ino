@@ -18,10 +18,11 @@ double rad=3.141592/180;
 double LR = 89.99;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
+int setAMPM = 0;
 int AMPM = 0;
 bool indexing = false;
 bool reading = false;
-unsigned int faceClock = 2;
+unsigned int faceClock = 1;
 String daysOfTheWeek[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 String MonthNames[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"};
 String sAMPM[2] = {"AM", "PM"};
@@ -67,9 +68,10 @@ void loop() {
     for(int j =0; j < strlength; j++){
       str[j] = data.substring(delimit[j] + 1, delimit[j+1]);
     }
-    if (str[0] == "It's Clock:"){
+    if (str[0] == "It's Clock"){
       Serial.println(str[0].indexOf("gg"));    // when it is not present it gives -1 value
       
+      faceClock = str[4].toInt();
       dayWeek = str[1].toInt()-1;
       
       rDTDelimit[0] = -1;
@@ -103,6 +105,7 @@ void loop() {
       for(int j =0; j < 3; j++)
       rDate[j] = str[5].substring(rDTDelimit[j] + 1, rDTDelimit[j+1]).toInt();
    }
+    
      else{
       display.clearDisplay();
       display.setTextSize(1);
@@ -116,7 +119,9 @@ void loop() {
       display.display();
      }
     indexing = false;
-    delay[5000];
+    Serial.println(str[0]);
+    Serial.println(str[2]);
+    Serial.println(str[4]);
   }
 }
 
