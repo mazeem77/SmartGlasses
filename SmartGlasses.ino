@@ -21,6 +21,7 @@ unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 int setAMPM = 0;
 int AMPM = 0;
+int check = 0;
 bool indexing = false;
 bool reading = false;
 unsigned int faceClock = 1;
@@ -116,11 +117,11 @@ void updateTime(unsigned long currentTime){
               if(rDate[1] > 12){
                 rDate[1] = 1;
                 rDate[2]++;
+              }
             }
           }
         }
       }
-    }
     previousTime = currentTime;
   }
 }
@@ -167,14 +168,78 @@ void setTimeRecieved(){
    }
 
 void displayNotifications(){
-      display.clearDisplay();
+  display.clearDisplay();
+  if(str[1] == "com.whatsapp"){                                                     // whatsapp messages and calls
+    display.drawBitmap(0, 0, Whatsapp, 128, 64, 1);
+    if(str[5] == "Incoming voice call")
+      check = 0;
+    else if(str[5] == "Missed voice call") {
+      check = 2;
       display.setTextSize(1);
       display.setTextColor(WHITE);
-      display.setCursor(0,0);
-      display.println(str[1]);
+      display.setCursor(0,50);
+      display.print("Missed call: ");
       display.println(str[3]);
+      display.display();
+    }
+    else {
+      check = 2;
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,50);
+      display.print("Text from: ");
+      display.println(str[3]);
+      display.display();
+    }
+  }
+  else if(str[1] == "android"){                                                    // android notifications
+    display.drawBitmap(0, 0, Android, 128, 64, 1);
+    check = 0;
+  }
+  else if(str[1] == "com.google.android.dialer"){                                 // Phone Call
+    display.drawBitmap(0, 0, Phone, 128, 64, 1);
+    if(str[5] == "Incoming call")
+      check = 0;
+    else {
+      check = 2;
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,45);
+      display.print("Missed call: ");
       display.println(str[5]);
       display.display();
+    }
+  }
+  else if(str[1] == "com.google.android.gm"){                                    // Gmail
+    display.drawBitmap(0, 0, Gmail, 128, 64, 1);
+    check = 1;
+  }
+  else if(str[1] == "com.google.android.apps.messaging"){                        // Messages
+    display.drawBitmap(0, 0, Message, 128, 64, 1);
+    check = 1;
+  }
+  else if(str[1] == "com.google.android.calendar"){                            // Google Calender 
+    display.drawBitmap(0, 0, Calender, 128, 64, 1);
+    check = 1;
+  }
+  else if(str[1] == "com.google.android.apps.maps")                           // Google Maps
+    display.drawBitmap(0, 0, Maps, 128, 64, 1);
+  else display.drawBitmap(0, 0, Notifications, 128, 64, 1);
+
+  if (check == 0){
+   display.setTextSize(1);
+   display.setTextColor(WHITE);
+   display.setCursor(0,50);
+   display.println(str[5]);
+   display.display();
+  }
+  else if(check == 1){
+   display.setTextSize(1);
+   display.setTextColor(WHITE);
+   display.setCursor(0,50);
+   display.println(str[3]);
+   display.display();
+  }
 }
 
 void setFaceTime(unsigned int face){      // Mix Clock
@@ -184,7 +249,7 @@ void setFaceTime(unsigned int face){      // Mix Clock
     display.setTextColor(WHITE);
     display.drawCircle(28, 32, 28, WHITE);
     if(setAMPM == 0)
-    showTimePin(28, 32, 0.1, 0.5, ((rTime[0]*60)/12) + (rTime[1]/10));
+      showTimePin(28, 32, 0.1, 0.5, ((rTime[0]*60)/12) + (rTime[1]/10));
     else if(setAMPM == 1) showTimePin(28, 32, 0.1, 0.5, (((rTime[0]-12)*60)/12) + (rTime[1]/10));
     showTimePin(28, 32, 0.1, 0.78, rTime[1]);
     display.setCursor(55,0);
