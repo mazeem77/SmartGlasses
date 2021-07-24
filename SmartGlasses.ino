@@ -19,6 +19,8 @@ double rad=3.141592/180;
 double LR = 89.99;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
+unsigned long cTime = 0;
+unsigned long pTime = 0;
 int setAMPM = 0;
 int AMPM = 0;
 int check = 0;
@@ -39,6 +41,7 @@ void updateTime(unsigned long currentTime);
 void setFaceTime(unsigned int face);
 void setTimeRecieved();
 void displayNotifications();
+void mapDisplay();
 
 // Setup
 void setup() { 
@@ -48,6 +51,11 @@ void setup() {
     Serial.println("OLED connection Failed");
     for(;;);
   }
+  // Company logo
+  display.clearDisplay();
+  display.drawBitmap(0, 0, Logo, 128, 64, 1);
+  display.display();
+  delay(3000);
 }
 
 // Loop
@@ -76,7 +84,7 @@ void loop() {
     }
     if (str[0] == "It's Clock")
       setTimeRecieved();
-     else displayNotifications();
+    else  displayNotifications();
     indexing = false;
     delay(5000);
   }
@@ -128,7 +136,7 @@ void updateTime(unsigned long currentTime){
 
 void setTimeRecieved(){
       Serial.println(str[0].indexOf("gg"));    // when it is not present it gives -1 value
-      
+      setAMPM = 0;
       faceClock = str[4].toInt();
       setAMPM = str[2].toInt();
       dayWeek = str[1].toInt()-1;
@@ -139,7 +147,7 @@ void setTimeRecieved(){
       rDTDelimit[3] = str[3].indexOf('\n', rDTDelimit[2]+1);
 
       for(int j =0; j < 3; j++)
-      rTime[j] = str[3].substring(rDTDelimit[j] + 1, rDTDelimit[j+1]).toInt();
+        rTime[j] = str[3].substring(rDTDelimit[j] + 1, rDTDelimit[j+1]).toInt();
 
       if(setAMPM == 0){
         if(rTime[0] < 12 && rTime[0] != 0)
@@ -171,8 +179,16 @@ void displayNotifications(){
   display.clearDisplay();
   if(str[1] == "com.whatsapp"){                                                     // whatsapp messages and calls
     display.drawBitmap(0, 0, Whatsapp, 128, 64, 1);
-    if(str[5] == "Incoming voice call")
-      check = 0;
+    if(str[5] == "Incoming voice call"){
+      check = 2;
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,46);
+      display.print(str[5]);
+      display.print(" : ");
+      display.println(str[3]);
+      display.display();
+    }      
     else if(str[5] == "Missed voice call") {
       check = 2;
       display.setTextSize(1);
@@ -198,8 +214,16 @@ void displayNotifications(){
   }
   else if(str[1] == "com.google.android.dialer"){                                 // Phone Call
     display.drawBitmap(0, 0, Phone, 128, 64, 1);
-    if(str[5] == "Incoming call")
-      check = 0;
+    if(str[5] == "Incoming call"){
+      check = 2;
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,46);
+      display.print(str[5]);
+      display.print(" : ");
+      display.println(str[3]);
+      display.display();
+    }
     else {
       check = 2;
       display.setTextSize(1);
@@ -216,15 +240,47 @@ void displayNotifications(){
   }
   else if(str[1] == "com.google.android.apps.messaging"){                        // Messages
     display.drawBitmap(0, 0, Message, 128, 64, 1);
-    check = 1;
+    check = 2;
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,42);
+    display.print(str[3]);
+    display.print(" : ");
+    display.println(str[5]);
+    display.display();
   }
   else if(str[1] == "com.google.android.calendar"){                            // Google Calender 
     display.drawBitmap(0, 0, Calender, 128, 64, 1);
     check = 1;
   }
-  else if(str[1] == "com.google.android.apps.maps")                           // Google Maps
-    display.drawBitmap(0, 0, Maps, 128, 64, 1);
-  else display.drawBitmap(0, 0, Notifications, 128, 64, 1);
+  else if(str[1] == "com.google.android.apps.maps"){                           // Google Maps
+    mapDisplay();
+    check = 0;
+  }
+
+  else if(str[3] == "App" || str[3] == "Text" || str[3] == "Title" || str[3].indexOf("Home") != -1){                           // Google Maps
+    cTime = millis();
+    if (cTime - pTime > 10000){
+      display.drawBitmap(0, 0, Maps, 128, 64, 1);
+      check = 2;
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,40);
+      display.println(str[4]);
+      display.println(str[5].substring(6));
+      pTime = cTime;
+      display.display();
+    }
+  }
+  else {
+    display.drawBitmap(0, 0, Notifications, 128, 64, 1);
+    check = 2;
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,44);
+    display.println("Notification Recieved");
+    display.display();
+  }
 
   if (check == 0){
    display.setTextSize(1);
@@ -258,7 +314,8 @@ void setFaceTime(unsigned int face){      // Mix Clock
     display.print(":");
     display.print(rTime[1]);
     display.setTextSize(1);
-    display.println(sAMPM[AMPM]);
+    if(setAMPM == 0)
+     display.print(sAMPM[AMPM]);
     display.setCursor(50,55);
     display.setTextSize(1);
     display.print(rDate[0]);
@@ -305,5 +362,40 @@ void setFaceTime(unsigned int face){      // Mix Clock
   display.setCursor(110, 55);
   display.print(MonthNames[rDate[1]-1]);
   display.display();
+  }
+}
+
+void mapDisplay(){
+  if(str[3].indexOf("Head northwest") != -1 || str[3].indexOf("Head southeast") != -1 || str[3].indexOf("Head south") != -1){
+    display.drawBitmap(0, 0, headNorthWest, 128, 64, 1);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,40);
+    display.println(str[3]);
+    display.display();
+  }
+  else if(str[3].indexOf("Turn right") != -1){
+    display.drawBitmap(0, 0, turnRight, 128, 64, 1);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,40);
+    display.println(str[3]);
+    display.display();
+  }
+  else if(str[3].indexOf("Turn left") != -1){
+    display.drawBitmap(0, 0, turnLeft, 128, 64, 1);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,40);
+    display.println(str[3]);
+    display.display();
+  }
+  else{
+    display.drawBitmap(0, 0, Maps, 128, 64, 1);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,40);
+    display.println(str[3]);
+    display.display();
   }
 }
